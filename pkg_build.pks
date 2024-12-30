@@ -49,13 +49,13 @@ CREATE OR REPLACE PACKAGE BODY pkg_build AS
         price_ram NUMBER;
     BEGIN
         SELECT * INTO build FROM Builds WHERE buildId = f_buildId;
-        SELECT price INTO price_cpu FROM CPU WHERE CPUId = build.cpu;
-        SELECT price INTO price_pccase FROM PCCase WHERE CaseId = build.pccase;
-        SELECT price INTO price_psu FROM PSU WHERE PSUId = build.psu;
-        SELECT price INTO price_cpuCooler FROM CPUCooler WHERE CPUCoolerId = build.cpuCooler;
-        SELECT price INTO price_mobo FROM Mobo WHERE MoboId = build.mobo;
-        SELECT price INTO price_gpu FROM GPU WHERE GPUId = build.gpu;
-        SELECT price INTO price_ram FROM RAM WHERE RAMId = build.ram;
+        SELECT MIN(price) INTO price_cpu FROM Supply WHERE productId = build.cpu AND productTypeId = (SELECT productTypeId FROM ProductType WHERE productName = 'CPU');
+        SELECT MIN(price) INTO price_pccase FROM Supply WHERE productId = build.pccase AND productTypeId = (SELECT productTypeId FROM ProductType WHERE productName = 'CASE');
+        SELECT MIN(price) INTO price_psu FROM Supply WHERE productId = build.psu AND productTypeId = (SELECT productTypeId FROM ProductType WHERE productName = 'PSU');
+        SELECT MIN(price) INTO price_cpuCooler FROM Supply WHERE productId = build.cpuCooler AND productTypeId = (SELECT productTypeId FROM ProductType WHERE productName = 'COOLER');
+        SELECT MIN(price) INTO price_mobo FROM Supply WHERE productId = build.mobo AND productTypeId = (SELECT productTypeId FROM ProductType WHERE productName = 'MOBO');
+        SELECT MIN(price) INTO price_gpu FROM Supply WHERE productId = build.gpu AND productTypeId = (SELECT productTypeId FROM ProductType WHERE productName = 'GPU');
+        SELECT MIN(price) INTO price_ram FROM Supply WHERE productId = build.ram AND productTypeId = (SELECT productTypeId FROM ProductType WHERE productName = 'RAM');
         RETURN price_cpu + price_pccase + price_psu + price_cpuCooler + price_mobo + price_gpu + price_ram;
     END calc_price;
 END pkg_build;

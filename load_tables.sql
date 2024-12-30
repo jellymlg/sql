@@ -68,8 +68,8 @@ INSERT INTO Supplier(supplierId, supplierName) VALUES (2, 'AQUA');
 
 INSERT INTO ProductType(productTypeId, productName) VALUES (1, 'CPU');
 INSERT INTO ProductType(productTypeId, productName) VALUES (2, 'RAM');
-INSERT INTO ProductType(productTypeId, productName) VALUES (3, 'Motherboard');
-INSERT INTO ProductType(productTypeId, productName) VALUES (4, 'CPU cooler');
+INSERT INTO ProductType(productTypeId, productName) VALUES (3, 'MOBO');
+INSERT INTO ProductType(productTypeId, productName) VALUES (4, 'COOLER');
 INSERT INTO ProductType(productTypeId, productName) VALUES (5, 'GPU');
-INSERT INTO ProductType(productTypeId, productName) VALUES (6, 'PC case');
-INSERT INTO ProductType(productTypeId, productName) VALUES (7, 'Power supply');
+INSERT INTO ProductType(productTypeId, productName) VALUES (6, 'CASE');
+INSERT INTO ProductType(productTypeId, productName) VALUES (7, 'PSU');

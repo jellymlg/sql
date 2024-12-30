@@ -11,6 +11,7 @@ CREATE TABLE  CPU  (
 
 CREATE TABLE  CPUCooler  (
   CPUCoolerId NUMBER PRIMARY KEY NOT NULL,
+  CPUCoolerName VARCHAR2(100) NOT NULL,
   socketId NUMBER NOT NULL
 );
 
@@ -18,7 +19,7 @@ CREATE TABLE  CPURAMComp  (
   CompId NUMBER PRIMARY KEY NOT NULL,
   CPUId NUMBER NOT NULL,
   SpeedMHZ NUMBER NOT NULL,
-  isLimit  NUMBER(1)
+  isLimit NUMBER(1)
 );
 
 CREATE TABLE  Sockets  (
@@ -146,15 +147,25 @@ CREATE TABLE Supplier (
   supplierName VARCHAR2(255) NOT NULL
 );
 
+CREATE TABLE ProductType (
+  productTypeId NUMBER PRIMARY KEY NOT NULL,
+  productName VARCHAR2(50) NOT NULL
+);
+
 CREATE TABLE Supply (
   supplierId NUMBER NOT NULL,
+  productTypeId NUMBER NOT NULL,
   productId NUMBER NOT NULL,
   price NUMBER NOT NULL
 );
 
+ALTER TABLE Supply ADD FOREIGN KEY (supplierId) REFERENCES Supplier (supplierId);
+ALTER TABLE Supply ADD FOREIGN KEY (productTypeId) REFERENCES ProductType (productTypeId);
+ALTER TABLE Supply ADD CONSTRAINT unique_supply UNIQUE (supplierId, productTypeId, productId);
+ALTER TABLE Supply ADD CONSTRAINT supply_price_positive CHECK ( price > 0 );
+
 ALTER TABLE CPU ADD FOREIGN KEY ( socketId ) REFERENCES  Sockets  ( SocketId );
 ALTER TABLE CPU ADD FOREIGN KEY ( brandId ) REFERENCES  Brands  ( brandId );
-ALTER TABLE CPU ADD FOREIGN KEY ( cpuId ) REFERENCES  Supply  ( productId );
 ALTER TABLE CPU ADD CONSTRAINT cpu_wattage_positive CHECK ( wattage > 0 );
 
 ALTER TABLE CPUCooler ADD FOREIGN KEY ( socketId ) REFERENCES  Sockets  ( SocketId );
@@ -165,27 +176,22 @@ ALTER TABLE Mobo ADD FOREIGN KEY ( socketId ) REFERENCES  Sockets  ( SocketId );
 ALTER TABLE Mobo ADD FOREIGN KEY ( brandId ) REFERENCES  Brands  ( brandId );
 ALTER TABLE Mobo ADD FOREIGN KEY ( supportedRAMTypeId ) REFERENCES  RAMType  ( RAMTypeId );
 ALTER TABLE Mobo ADD FOREIGN KEY ( formId ) REFERENCES  FormFactor  ( formId );
-ALTER TABLE Mobo ADD FOREIGN KEY ( MoboId ) REFERENCES  Supply  ( productId );
 
 ALTER TABLE MoboPCI ADD FOREIGN KEY ( MoboId ) REFERENCES  Mobo  ( MoboId );
 ALTER TABLE MoboPCI ADD FOREIGN KEY ( PCIId ) REFERENCES  PCI  ( PCIId );
 
 ALTER TABLE RAM ADD FOREIGN KEY ( brandId ) REFERENCES  Brands  ( brandId );
 ALTER TABLE RAM ADD FOREIGN KEY ( RAMTypeId ) REFERENCES  RAMType  ( RAMTypeId );
-ALTER TABLE RAM ADD FOREIGN KEY ( RAMId ) REFERENCES  Supply  ( productId );
 
 ALTER TABLE GPU ADD FOREIGN KEY ( brandId ) REFERENCES  Brands  ( brandId );
 ALTER TABLE GPU ADD FOREIGN KEY ( PCIPortId ) REFERENCES  PCI  ( PCIId );
-ALTER TABLE GPU ADD FOREIGN KEY ( GPUId ) REFERENCES  Supply  ( productId );
 ALTER TABLE GPU ADD CONSTRAINT gpu_wattage_positive CHECK ( wattage > 0 );
 
 ALTER TABLE PCCase ADD FOREIGN KEY ( brandId ) REFERENCES  Brands  ( brandId );
 ALTER TABLE PCCase ADD FOREIGN KEY ( formId ) REFERENCES  FormFactor  ( formId );
-ALTER TABLE PCCase ADD FOREIGN KEY ( CaseId ) REFERENCES  Supply  ( productId );
 
 ALTER TABLE PSU ADD FOREIGN KEY ( quality ) REFERENCES  PSUQuality  ( PSUQualityId );
 ALTER TABLE PSU ADD FOREIGN KEY ( brandId ) REFERENCES  Brands  ( brandId );
-ALTER TABLE PSU ADD FOREIGN KEY ( PSUId ) REFERENCES  Supply  ( productId );
 ALTER TABLE PSU ADD CONSTRAINT psu_wattage_positive CHECK ( wattage > 0 );
 
 ALTER TABLE SavedBuilds ADD FOREIGN KEY ( userId ) REFERENCES  Users  ( userId );
@@ -201,6 +207,3 @@ ALTER TABLE Builds ADD FOREIGN KEY ( ram ) REFERENCES  RAM  ( RAMId );
 
 ALTER TABLE UserLog ADD FOREIGN KEY ( userId ) REFERENCES Users ( userId );
 ALTER TABLE Users ADD CONSTRAINT unique_username UNIQUE (userName);
-
-ALTER TABLE Supply ADD CONSTRAINT unique_supply UNIQUE (supplierId, productId);
-ALTER TABLE Supply ADD CONSTRAINT supply_price_positive CHECK ( price > 0 );

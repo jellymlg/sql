@@ -3,20 +3,23 @@ BEFORE INSERT OR UPDATE ON Supply
 FOR EACH ROW
 DECLARE
     product_exists NUMBER;
+    productTypeName VARCHAR2(50);
 BEGIN
-    IF :new.productTypeId = 1 THEN
+    SELECT productName INTO productTypeName FROM ProductType WHERE productTypeId = :new.productTypeId;
+
+    IF productTypeName = 'CPU' THEN
         SELECT COUNT(*) INTO product_exists FROM CPU WHERE CPUId = :new.productId;
-    ELSIF :new.productTypeId = 2 THEN
+    ELSIF productTypeName = 'RAM' THEN
         SELECT COUNT(*) INTO product_exists FROM RAM WHERE RAMId = :new.productId;
-    ELSIF :new.productTypeId = 3 THEN
+    ELSIF productTypeName = 'MOBO' THEN
         SELECT COUNT(*) INTO product_exists FROM Mobo WHERE MoboId = :new.productId;
-    ELSIF :new.productTypeId = 4 THEN
+    ELSIF productTypeName = 'COOLER' THEN
         SELECT COUNT(*) INTO product_exists FROM CPUCooler WHERE CPUCoolerId = :new.productId;
-    ELSIF :new.productTypeId = 5 THEN
+    ELSIF productTypeName = 'GPU' THEN
         SELECT COUNT(*) INTO product_exists FROM GPU WHERE GPUId = :new.productId;
-    ELSIF :new.productTypeId = 6 THEN
+    ELSIF productTypeName = 'CASE' THEN
         SELECT COUNT(*) INTO product_exists FROM PCCase WHERE CaseId = :new.productId;
-    ELSIF :new.productTypeId = 7 THEN
+    ELSIF productTypeName = 'PSU' THEN
         SELECT COUNT(*) INTO product_exists FROM PSU WHERE PSUId = :new.productId;
     ELSE
         product_exists := 0;

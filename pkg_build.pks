@@ -10,6 +10,22 @@ CREATE OR REPLACE PACKAGE pkg_build AS
     FUNCTION calc_price(
         f_buildId NUMBER
     ) RETURN NUMBER;
+    PROCEDURE recomm_missing(
+        p_cpuId IN NUMBER,
+        p_caseId IN NUMBER,
+        p_psuID IN NUMBER,
+        p_coolerId IN NUMBER,
+        p_moboId IN NUMBER,
+        p_gpuId IN NUMBER,
+        p_ramId IN NUMBER,
+        p_cpu_cursor OUT SYS_REFCURSOR,
+        p_case_cursor OUT SYS_REFCURSOR,
+        p_psu_cursor OUT SYS_REFCURSOR,
+        p_cooler_cursor OUT SYS_REFCURSOR,
+        p_mobo_cursor OUT SYS_REFCURSOR,
+        p_gpu_cursor OUT SYS_REFCURSOR,
+        p_ram_cursor OUT SYS_REFCURSOR
+    );
 END pkg_build;
 /
 CREATE OR REPLACE PACKAGE BODY pkg_build AS
@@ -58,4 +74,24 @@ CREATE OR REPLACE PACKAGE BODY pkg_build AS
         SELECT MIN(price) INTO price_ram FROM Supply WHERE productId = build.ram AND productTypeId = (SELECT productTypeId FROM ProductType WHERE productName = 'RAM');
         RETURN price_cpu + price_pccase + price_psu + price_cpuCooler + price_mobo + price_gpu + price_ram;
     END calc_price;
+
+    PROCEDURE recomm_missing(
+        p_cpuId IN NUMBER,
+        p_caseId IN NUMBER,
+        p_psuID IN NUMBER,
+        p_coolerId IN NUMBER,
+        p_moboId IN NUMBER,
+        p_gpuId IN NUMBER,
+        p_ramId IN NUMBER,
+        p_cpu_cursor OUT SYS_REFCURSOR,
+        p_case_cursor OUT SYS_REFCURSOR,
+        p_psu_cursor OUT SYS_REFCURSOR,
+        p_cooler_cursor OUT SYS_REFCURSOR,
+        p_mobo_cursor OUT SYS_REFCURSOR,
+        p_gpu_cursor OUT SYS_REFCURSOR,
+        p_ram_cursor OUT SYS_REFCURSOR
+    ) IS
+    BEGIN
+        DBMS_OUTPUT.PUT_LINE('TODO');
+    END recomm_missing;
 END pkg_build;

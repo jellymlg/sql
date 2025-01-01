@@ -1,6 +1,7 @@
+CREATE SEQUENCE user_id_seq START WITH 2365;
+
 CREATE OR REPLACE PACKAGE pkg_user AS
     PROCEDURE create_user(
-        p_userId IN NUMBER,
         p_userName IN VARCHAR2,
         p_password IN VARCHAR2
     );
@@ -24,13 +25,14 @@ END pkg_user;
 /
 CREATE OR REPLACE PACKAGE BODY pkg_user AS
     PROCEDURE create_user(
-        p_userId IN NUMBER,
         p_userName IN VARCHAR2,
         p_password IN VARCHAR2
     ) IS
+        hashed_password VARCHAR2(255);
     BEGIN
+        hashed_password := DBMS_CRYPTO.HASH(UTL_I18N.STRING_TO_RAW(p_password, 'AL32UTF8'), 4);
         INSERT INTO Users (userId, userName, password, regDate)
-        VALUES (p_userId, p_userName, p_password, SYSDATE);
+        VALUES (user_id_seq.NEXTVAL, p_userName, hashed_password, SYSDATE);
     EXCEPTION
         WHEN DUP_VAL_ON_INDEX THEN
             RAISE_APPLICATION_ERROR(-20001, 'User ID or User Name already exists.');
@@ -42,9 +44,11 @@ CREATE OR REPLACE PACKAGE BODY pkg_user AS
         p_userId IN NUMBER,
         p_new_password IN VARCHAR2
     ) IS
+        hashed_password VARCHAR2(255);
     BEGIN
+        hashed_password := DBMS_CRYPTO.HASH(UTL_I18N.STRING_TO_RAW(p_new_password, 'AL32UTF8'), 4);
         UPDATE Users
-        SET password = p_new_password
+        SET password = hashed_password
         WHERE userId = p_userId;
         IF SQL%ROWCOUNT = 0 THEN
             RAISE_APPLICATION_ERROR(-20003, 'User ID not found.');
@@ -56,14 +60,17 @@ CREATE OR REPLACE PACKAGE BODY pkg_user AS
         p_password IN VARCHAR2,
         p_is_valid OUT BOOLEAN
     ) IS
-        v_stored_password VARCHAR2(255);
+        stored_password VARCHAR2(255);
+        hashed_password VARCHAR2(255);
     BEGIN
         SELECT password
-        INTO v_stored_password
+        INTO stored_password
         FROM Users
         WHERE userName = p_userName;
 
-        IF v_stored_password = p_password THEN
+        hashed_password := DBMS_CRYPTO.HASH(UTL_I18N.STRING_TO_RAW(p_password, 'AL32UTF8'), 4);
+
+        IF stored_password = hashed_password THEN
             p_is_valid := TRUE;
         ELSE
             p_is_valid := FALSE;

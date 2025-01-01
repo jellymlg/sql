@@ -1,31 +1,65 @@
 CREATE OR REPLACE TRIGGER product_supply_trg
-BEFORE INSERT OR UPDATE ON Supply
-FOR EACH ROW
+  BEFORE INSERT OR UPDATE ON supply
+  FOR EACH ROW
 DECLARE
-    product_exists NUMBER;
-    productTypeName VARCHAR2(50);
+  product_exists  NUMBER;
+  producttypename VARCHAR2(50);
 BEGIN
-    SELECT productName INTO productTypeName FROM ProductType WHERE productTypeId = :new.productTypeId;
+  SELECT productname
+    INTO producttypename
+    FROM producttype
+   WHERE producttypeid = :new.producttypeid;
 
-    IF productTypeName = 'CPU' THEN
-        SELECT COUNT(*) INTO product_exists FROM CPU WHERE CPUId = :new.productId;
-    ELSIF productTypeName = 'RAM' THEN
-        SELECT COUNT(*) INTO product_exists FROM RAM WHERE RAMId = :new.productId;
-    ELSIF productTypeName = 'MOBO' THEN
-        SELECT COUNT(*) INTO product_exists FROM Mobo WHERE MoboId = :new.productId;
-    ELSIF productTypeName = 'COOLER' THEN
-        SELECT COUNT(*) INTO product_exists FROM CPUCooler WHERE CPUCoolerId = :new.productId;
-    ELSIF productTypeName = 'GPU' THEN
-        SELECT COUNT(*) INTO product_exists FROM GPU WHERE GPUId = :new.productId;
-    ELSIF productTypeName = 'CASE' THEN
-        SELECT COUNT(*) INTO product_exists FROM PCCase WHERE CaseId = :new.productId;
-    ELSIF productTypeName = 'PSU' THEN
-        SELECT COUNT(*) INTO product_exists FROM PSU WHERE PSUId = :new.productId;
-    ELSE
-        product_exists := 0;
-    END IF;
+  IF producttypename = 'CPU'
+  THEN
+    SELECT COUNT(*)
+      INTO product_exists
+      FROM cpu
+     WHERE cpuid = :new.productid;
+  ELSIF producttypename = 'RAM'
+  THEN
+    SELECT COUNT(*)
+      INTO product_exists
+      FROM ram
+     WHERE ramid = :new.productid;
+  ELSIF producttypename = 'MOBO'
+  THEN
+    SELECT COUNT(*)
+      INTO product_exists
+      FROM mobo
+     WHERE moboid = :new.productid;
+  ELSIF producttypename = 'COOLER'
+  THEN
+    SELECT COUNT(*)
+      INTO product_exists
+      FROM cpucooler
+     WHERE cpucoolerid = :new.productid;
+  ELSIF producttypename = 'GPU'
+  THEN
+    SELECT COUNT(*)
+      INTO product_exists
+      FROM gpu
+     WHERE gpuid = :new.productid;
+  ELSIF producttypename = 'CASE'
+  THEN
+    SELECT COUNT(*)
+      INTO product_exists
+      FROM pccase
+     WHERE caseid = :new.productid;
+  ELSIF producttypename = 'PSU'
+  THEN
+    SELECT COUNT(*)
+      INTO product_exists
+      FROM psu
+     WHERE psuid = :new.productid;
+  ELSE
+    product_exists := 0;
+  END IF;
 
-    IF product_exists = 0 THEN
-        RAISE_APPLICATION_ERROR(-20000, 'Invalid productTypeId or productId does not exist.');
-    END IF;
+  IF product_exists = 0
+  THEN
+    raise_application_error(-20000,
+                            'Invalid productTypeId or productId does not exist.');
+  END IF;
 END;
+/

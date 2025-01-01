@@ -55,7 +55,7 @@ CREATE OR REPLACE PACKAGE BODY pkg_build AS
         psu_table SYS_REFCURSOR;
     BEGIN
         OPEN psu_table FOR
-        SELECT PSUId, wattage, quality, brandId FROM PSU INNER JOIN PSUQuality pq ON PSU.quality = pq.PSUQualityId
+        SELECT PSU.* FROM PSU INNER JOIN PSUQuality pq ON PSU.quality = pq.PSUQualityId
         WHERE wattage >= f_wattage AND efficiency >= f_minEff;
         RETURN psu_table;
     END recomm_PSU;
@@ -121,7 +121,9 @@ CREATE OR REPLACE PACKAGE BODY pkg_build AS
                 WHERE socketId = (SELECT socketId FROM Mobo WHERE MoboId = p_moboId);
             END IF;
             IF p_ramId IS NOT NULL THEN
-                DBMS_OUTPUT.PUT_LINE('filter cpus by ram');
+                SELECT cput.* BULK COLLECT INTO cpu_table FROM TABLE(cpu_table) cput
+                INNER JOIN CPURAMComp ON cput.CPUId = CPURAMComp.CPUId
+                WHERE SpeedMHZ = (SELECT RAMSpeedMHZ FROM RAM WHERE RAMId = p_ramId);
             END IF;
         ELSE
             SELECT * BULK COLLECT INTO cpu_table FROM TABLE(cpu_table) WHERE CPUId = p_cpuId;
@@ -129,7 +131,7 @@ CREATE OR REPLACE PACKAGE BODY pkg_build AS
         IF p_caseId IS NULL THEN
             IF p_moboId IS NOT NULL THEN
                 SELECT * BULK COLLECT INTO case_table FROM TABLE(case_table)
-                WHERE formId >= (SELECT formId FROM Mobo WHERE MoboId = p_moboId);
+                WHERE formId <= (SELECT formId FROM Mobo WHERE MoboId = p_moboId);
             END IF;
         ELSE
             SELECT * BULK COLLECT INTO case_table FROM TABLE(case_table) WHERE CaseId = p_caseId;
@@ -151,7 +153,19 @@ CREATE OR REPLACE PACKAGE BODY pkg_build AS
             SELECT * BULK COLLECT INTO cooler_table FROM TABLE(cooler_table) WHERE CPUCoolerId = p_coolerId;
         END IF;
         IF p_moboId IS NULL THEN
-            DBMS_OUTPUT.PUT_LINE('find mobo');
+            IF p_cpuId IS NOT NULL THEN
+                SELECT * BULK COLLECT INTO mobo_table FROM TABLE(mobo_table)
+                WHERE socketId = (SELECT socketId FROM CPU WHERE CPUId = p_cpuId);
+            END IF;
+            IF p_caseId IS NOT NULL THEN
+                SELECT * BULK COLLECT INTO mobo_table FROM TABLE(mobo_table)
+                WHERE formId >= (SELECT formId FROM PCCase WHERE CaseId = p_caseId);
+            END IF;
+            IF p_ramId IS NOT NULL THEN
+                SELECT * BULK COLLECT INTO mobo_table FROM TABLE(mobo_table)
+                WHERE supportedRAMTypeId = (SELECT RAMTypeId FROM RAM WHERE RAMId = p_ramId)
+                AND RAMSlotCount >= (SELECT stickCount FROM RAM WHERE RAMId = p_ramId);
+            END IF;
         ELSE
             SELECT * BULK COLLECT INTO mobo_table FROM TABLE(mobo_table) WHERE MoboId = p_moboId;
         END IF;
@@ -166,7 +180,16 @@ CREATE OR REPLACE PACKAGE BODY pkg_build AS
             SELECT * BULK COLLECT INTO gpu_table FROM TABLE(gpu_table) WHERE GPUId = p_gpuId;
         END IF;
         IF p_ramId IS NULL THEN
-            DBMS_OUTPUT.PUT_LINE('find ram');
+            IF p_moboId IS NOT NULL THEN
+                SELECT * BULK COLLECT INTO ram_table FROM TABLE(ram_table)
+                WHERE RAMTypeId = (SELECT supportedRAMTypeId FROM Mobo WHERE MoboId = p_moboId)
+                AND stickCount <= (SELECT RAMSlotCount FROM Mobo WHERE MoboId = p_moboId);
+            END IF;
+            IF p_cpuId IS NOT NULL THEN
+                SELECT * BULK COLLECT INTO ram_table FROM TABLE(ram_table)
+                WHERE RAMTypeId IN (SELECT RAMTypeId FROM CPURAMComp WHERE CPUId = p_cpuId)
+                AND RAMSpeedMHZ IN (SELECT SpeedMHZ FROM CPURAMComp WHERE CPUId = p_cpuId);
+            END IF;
         ELSE
             SELECT * BULK COLLECT INTO ram_table FROM TABLE(ram_table) WHERE RAMId = p_ramId;
         END IF;

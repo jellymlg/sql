@@ -1,4 +1,11 @@
 CREATE OR REPLACE PACKAGE pkg_build AS
+    TYPE t_CPU IS TABLE OF CPU%ROWTYPE;
+    TYPE t_Case IS TABLE OF PCCase%ROWTYPE;
+    TYPE t_PSU IS TABLE OF PSU%ROWTYPE;
+    TYPE t_CPUCooler IS TABLE OF CPUCooler%ROWTYPE;
+    TYPE t_Mobo IS TABLE OF Mobo%ROWTYPE;
+    TYPE t_GPU IS TABLE OF GPU%ROWTYPE;
+    TYPE t_RAM IS TABLE OF RAM%ROWTYPE;
     FUNCTION avg_wattage(
         f_cpuId NUMBER,
         f_gpuId NUMBER
@@ -6,14 +13,14 @@ CREATE OR REPLACE PACKAGE pkg_build AS
     FUNCTION recomm_PSU(
         f_wattage NUMBER,
         f_minEff NUMBER DEFAULT 80
-    ) RETURN NUMBER;
+    ) RETURN SYS_REFCURSOR;
     FUNCTION calc_price(
         f_buildId NUMBER
     ) RETURN NUMBER;
     PROCEDURE recomm_missing(
         p_cpuId IN NUMBER,
         p_caseId IN NUMBER,
-        p_psuID IN NUMBER,
+        p_psuId IN NUMBER,
         p_coolerId IN NUMBER,
         p_moboId IN NUMBER,
         p_gpuId IN NUMBER,
@@ -44,12 +51,13 @@ CREATE OR REPLACE PACKAGE BODY pkg_build AS
     FUNCTION recomm_PSU(
         f_wattage NUMBER,
         f_minEff NUMBER
-    ) RETURN NUMBER IS
-        psuId NUMBER;
+    ) RETURN SYS_REFCURSOR IS
+        psu_table SYS_REFCURSOR;
     BEGIN
-        SELECT PSUId INTO psuId FROM PSU INNER JOIN PSUQuality pq ON PSU.quality = pq.PSUQualityId
+        OPEN psu_table FOR
+        SELECT PSUId, wattage, quality, brandId FROM PSU INNER JOIN PSUQuality pq ON PSU.quality = pq.PSUQualityId
         WHERE wattage >= f_wattage AND efficiency >= f_minEff;
-        RETURN psuId;
+        RETURN psu_table;
     END recomm_PSU;
 
     FUNCTION calc_price(
@@ -78,7 +86,7 @@ CREATE OR REPLACE PACKAGE BODY pkg_build AS
     PROCEDURE recomm_missing(
         p_cpuId IN NUMBER,
         p_caseId IN NUMBER,
-        p_psuID IN NUMBER,
+        p_psuId IN NUMBER,
         p_coolerId IN NUMBER,
         p_moboId IN NUMBER,
         p_gpuId IN NUMBER,
@@ -91,7 +99,76 @@ CREATE OR REPLACE PACKAGE BODY pkg_build AS
         p_gpu_cursor OUT SYS_REFCURSOR,
         p_ram_cursor OUT SYS_REFCURSOR
     ) IS
+        cpu_table t_CPU;
+        case_table t_Case;
+        psu_table t_PSU;
+        cooler_table t_CPUCooler;
+        mobo_table t_Mobo;
+        gpu_table t_GPU;
+        ram_table t_RAM;
+        recomm_psu_cursor SYS_REFCURSOR;
     BEGIN
-        DBMS_OUTPUT.PUT_LINE('TODO');
+        SELECT * BULK COLLECT INTO cpu_table FROM CPU;
+        SELECT * BULK COLLECT INTO case_table FROM PCCase;
+        SELECT * BULK COLLECT INTO psu_table FROM PSU;
+        SELECT * BULK COLLECT INTO cooler_table FROM CPUCooler;
+        SELECT * BULK COLLECT INTO mobo_table FROM Mobo;
+        SELECT * BULK COLLECT INTO gpu_table FROM GPU;
+        SELECT * BULK COLLECT INTO ram_table FROM RAM;
+        IF p_cpuId IS NULL THEN
+            IF p_moboId IS NOT NULL THEN
+                SELECT * BULK COLLECT INTO cpu_table FROM TABLE(cpu_table)
+                WHERE socketId = (SELECT socketId FROM Mobo WHERE MoboId = p_moboId);
+            END IF;
+            IF p_ramId IS NOT NULL THEN
+                DBMS_OUTPUT.PUT_LINE('filter cpus by ram');
+            END IF;
+        ELSE
+            SELECT * BULK COLLECT INTO cpu_table FROM TABLE(cpu_table) WHERE CPUId = p_cpuId;
+        END IF;
+        IF p_caseId IS NULL THEN
+            IF p_moboId IS NOT NULL THEN
+                SELECT * BULK COLLECT INTO case_table FROM TABLE(case_table)
+                WHERE formId >= (SELECT formId FROM Mobo WHERE MoboId = p_moboId);
+            END IF;
+        ELSE
+            SELECT * BULK COLLECT INTO case_table FROM TABLE(case_table) WHERE CaseId = p_caseId;
+        END IF;
+        IF p_psuId IS NULL THEN
+            IF p_cpuId IS NOT NULL AND p_gpuId IS NOT NULL THEN
+                recomm_psu_cursor := recomm_PSU(avg_wattage(p_cpuId, p_gpuId));
+                FETCH recomm_psu_cursor BULK COLLECT INTO psu_table;
+            END IF;
+        ELSE
+            SELECT * BULK COLLECT INTO psu_table FROM TABLE(psu_table) WHERE PSUId = p_psuId;
+        END IF;
+        IF p_coolerId IS NULL THEN
+            IF p_moboId IS NOT NULL THEN
+                SELECT * BULK COLLECT INTO cooler_table FROM TABLE(cooler_table)
+                WHERE socketId = (SELECT socketId FROM Mobo WHERE MoboId = p_moboId);
+            END IF;
+        ELSE
+            SELECT * BULK COLLECT INTO cooler_table FROM TABLE(cooler_table) WHERE CPUCoolerId = p_coolerId;
+        END IF;
+        IF p_moboId IS NULL THEN
+            DBMS_OUTPUT.PUT_LINE('find mobo');
+        ELSE
+            SELECT * BULK COLLECT INTO mobo_table FROM TABLE(mobo_table) WHERE MoboId = p_moboId;
+        END IF;
+        IF p_gpuId IS NULL THEN
+            IF p_moboId IS NOT NULL THEN
+                SELECT * BULK COLLECT INTO gpu_table FROM TABLE(gpu_table) WHERE PCIPortId IN (
+                    SELECT PCIId FROM Mobo INNER JOIN MoboPCI ON Mobo.MoboId = MoboPCI.MoboId
+                    WHERE Mobo.MoboId = p_moboId
+                );
+            END IF;
+        ELSE
+            SELECT * BULK COLLECT INTO gpu_table FROM TABLE(gpu_table) WHERE GPUId = p_gpuId;
+        END IF;
+        IF p_ramId IS NULL THEN
+            DBMS_OUTPUT.PUT_LINE('find ram');
+        ELSE
+            SELECT * BULK COLLECT INTO ram_table FROM TABLE(ram_table) WHERE RAMId = p_ramId;
+        END IF;
     END recomm_missing;
 END pkg_build;

@@ -2,7 +2,6 @@ CREATE OR REPLACE PACKAGE pkg_build AS
   TYPE t_cpu IS TABLE OF cpu%ROWTYPE;
   TYPE t_case IS TABLE OF pccase%ROWTYPE;
   TYPE t_psu IS TABLE OF psu%ROWTYPE;
-  TYPE t_cpucooler IS TABLE OF cpucooler%ROWTYPE;
   TYPE t_mobo IS TABLE OF mobo%ROWTYPE;
   TYPE t_gpu IS TABLE OF gpu%ROWTYPE;
   TYPE t_ram IS TABLE OF ram%ROWTYPE;
@@ -14,14 +13,12 @@ CREATE OR REPLACE PACKAGE pkg_build AS
   PROCEDURE recomm_missing(p_cpuid         IN NUMBER
                           ,p_caseid        IN NUMBER
                           ,p_psuid         IN NUMBER
-                          ,p_coolerid      IN NUMBER
                           ,p_moboid        IN NUMBER
                           ,p_gpuid         IN NUMBER
                           ,p_ramid         IN NUMBER
                           ,p_cpu_cursor    OUT SYS_REFCURSOR
                           ,p_case_cursor   OUT SYS_REFCURSOR
                           ,p_psu_cursor    OUT SYS_REFCURSOR
-                          ,p_cooler_cursor OUT SYS_REFCURSOR
                           ,p_mobo_cursor   OUT SYS_REFCURSOR
                           ,p_gpu_cursor    OUT SYS_REFCURSOR
                           ,p_ram_cursor    OUT SYS_REFCURSOR);
@@ -57,7 +54,6 @@ CREATE OR REPLACE PACKAGE BODY pkg_build AS
     price_cpu       NUMBER;
     price_pccase    NUMBER;
     price_psu       NUMBER;
-    price_cpucooler NUMBER;
     price_mobo      NUMBER;
     price_gpu       NUMBER;
     price_ram       NUMBER;
@@ -82,13 +78,6 @@ CREATE OR REPLACE PACKAGE BODY pkg_build AS
        AND producttypeid =
            (SELECT producttypeid FROM producttype WHERE productname = 'PSU');
     SELECT MIN(price)
-      INTO price_cpucooler
-      FROM supply
-     WHERE productid = build.cpucooler
-       AND producttypeid = (SELECT producttypeid
-                              FROM producttype
-                             WHERE productname = 'COOLER');
-    SELECT MIN(price)
       INTO price_mobo
       FROM supply
      WHERE productid = build.mobo
@@ -106,27 +95,24 @@ CREATE OR REPLACE PACKAGE BODY pkg_build AS
      WHERE productid = build.ram
        AND producttypeid =
            (SELECT producttypeid FROM producttype WHERE productname = 'RAM');
-    RETURN price_cpu + price_pccase + price_psu + price_cpucooler + price_mobo + price_gpu + price_ram;
+    RETURN price_cpu + price_pccase + price_psu + price_mobo + price_gpu + price_ram;
   END calc_price;
 
   PROCEDURE recomm_missing(p_cpuid         IN NUMBER
                           ,p_caseid        IN NUMBER
                           ,p_psuid         IN NUMBER
-                          ,p_coolerid      IN NUMBER
                           ,p_moboid        IN NUMBER
                           ,p_gpuid         IN NUMBER
                           ,p_ramid         IN NUMBER
                           ,p_cpu_cursor    OUT SYS_REFCURSOR
                           ,p_case_cursor   OUT SYS_REFCURSOR
                           ,p_psu_cursor    OUT SYS_REFCURSOR
-                          ,p_cooler_cursor OUT SYS_REFCURSOR
                           ,p_mobo_cursor   OUT SYS_REFCURSOR
                           ,p_gpu_cursor    OUT SYS_REFCURSOR
                           ,p_ram_cursor    OUT SYS_REFCURSOR) IS
     cpu_table         t_cpu;
     case_table        t_case;
     psu_table         t_psu;
-    cooler_table      t_cpucooler;
     mobo_table        t_mobo;
     gpu_table         t_gpu;
     ram_table         t_ram;
@@ -135,7 +121,6 @@ CREATE OR REPLACE PACKAGE BODY pkg_build AS
     SELECT * BULK COLLECT INTO cpu_table FROM cpu;
     SELECT * BULK COLLECT INTO case_table FROM pccase;
     SELECT * BULK COLLECT INTO psu_table FROM psu;
-    SELECT * BULK COLLECT INTO cooler_table FROM cpucooler;
     SELECT * BULK COLLECT INTO mobo_table FROM mobo;
     SELECT * BULK COLLECT INTO gpu_table FROM gpu;
     SELECT * BULK COLLECT INTO ram_table FROM ram;
@@ -200,24 +185,6 @@ CREATE OR REPLACE PACKAGE BODY pkg_build AS
         INTO psu_table
         FROM TABLE(psu_table)
        WHERE psuid = p_psuid;
-    END IF;
-    IF p_coolerid IS NULL
-    THEN
-      IF p_moboid IS NOT NULL
-      THEN
-        SELECT *
-          BULK COLLECT
-          INTO cooler_table
-          FROM TABLE(cooler_table)
-         WHERE socketid =
-               (SELECT socketid FROM mobo WHERE moboid = p_moboid);
-      END IF;
-    ELSE
-      SELECT *
-        BULK COLLECT
-        INTO cooler_table
-        FROM TABLE(cooler_table)
-       WHERE cpucoolerid = p_coolerid;
     END IF;
     IF p_moboid IS NULL
     THEN

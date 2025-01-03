@@ -55,6 +55,15 @@ INSERT INTO Brands(brandId, brandName) VALUES (13, 'HyperX ');
 INSERT INTO Brands(brandId, brandName) VALUES (14, 'TeamGroup');
 INSERT INTO Brands(brandId, brandName) VALUES (15, 'Patriot');
 INSERT INTO Brands(brandId, brandName) VALUES (16, 'Samsung');
+INSERT INTO Brands(brandId, brandName) VALUES (17, 'NZXT');
+INSERT INTO Brands(brandId, brandName) VALUES (18, 'Cooler Master');
+INSERT INTO Brands(brandId, brandName) VALUES (19, 'Lian Li');
+INSERT INTO Brands(brandId, brandName) VALUES (20, 'Thermaltake');
+INSERT INTO Brands(brandId, brandName) VALUES (21, 'Phanteks');
+INSERT INTO Brands(brandId, brandName) VALUES (22, 'SilverStone');
+INSERT INTO Brands(brandId, brandName) VALUES (23, 'Be Quiet!');
+INSERT INTO Brands(brandId, brandName) VALUES (24, 'Deepcool');
+INSERT INTO Brands(brandId, brandName) VALUES (25, 'Fractal Design');
 
 INSERT INTO RAMType(RAMTypeId, RAMTypeName) VALUES (1, 'DDR1');
 INSERT INTO RAMType(RAMTypeId, RAMTypeName) VALUES (2, 'DDR2');
@@ -190,3 +199,27 @@ INSERT INTO GPU(GPUId, GPUName, brandId, GPUSpeedMHZ, GPURAMSizeGB, PCIPortId, w
 INSERT INTO GPU(GPUId, GPUName, brandId, GPUSpeedMHZ, GPURAMSizeGB, PCIPortId, wattage) VALUES (8, 'AMD Radeon RX 5500 XT', 2, 1717, 8, 16, 130);
 INSERT INTO GPU(GPUId, GPUName, brandId, GPUSpeedMHZ, GPURAMSizeGB, PCIPortId, wattage) VALUES (9, 'NVIDIA GeForce GT 1030', 7, 1468, 2, 12, 30);
 INSERT INTO GPU(GPUId, GPUName, brandId, GPUSpeedMHZ, GPURAMSizeGB, PCIPortId, wattage) VALUES (10, 'MSI Radeon RX 7900 XTX', 6, 1900, 24, 20, 355);
+
+INSERT INTO PCCase(CaseId, CaseName, formId, brandId) VALUES (1, 'Corsair Obsidian 1000D', 1, 8);
+INSERT INTO PCCase(CaseId, CaseName, formId, brandId) VALUES (2, 'NZXT H510 Elite', 2, 17);
+INSERT INTO PCCase(CaseId, CaseName, formId, brandId) VALUES (3, 'Cooler Master MasterBox Q300L', 3, 18);
+INSERT INTO PCCase(CaseId, CaseName, formId, brandId) VALUES (4, 'Lian Li TU150', 4, 19);
+INSERT INTO PCCase(CaseId, CaseName, formId, brandId) VALUES (5, 'Fractal Design Define 7 XL', 1, 25);
+INSERT INTO PCCase(CaseId, CaseName, formId, brandId) VALUES (6, 'Thermaltake View 51 Snow', 2, 20);
+INSERT INTO PCCase(CaseId, CaseName, formId, brandId) VALUES (7, 'Phanteks Enthoo Evolv mATX', 3, 21);
+INSERT INTO PCCase(CaseId, CaseName, formId, brandId) VALUES (8, 'SilverStone SG13', 4, 22);
+INSERT INTO PCCase(CaseId, CaseName, formId, brandId) VALUES (9, 'Be Quiet! Silent Base 802', 2, 23);
+INSERT INTO PCCase(CaseId, CaseName, formId, brandId) VALUES (10, 'Deepcool MACUBE 310P', 3, 24);
+
+INSERT INTO PSU(PSUId, PSUName, wattage, quality, brandId) VALUES (1, 'Corsair CX450M', 450, 1, 8);
+INSERT INTO PSU(PSUId, PSUName, wattage, quality, brandId) VALUES (2, 'Thermaltake Smart 550W', 550, 2, 20);
+INSERT INTO PSU(PSUId, PSUName, wattage, quality, brandId) VALUES (3, 'Lian Li SP750', 750, 3, 19);
+INSERT INTO PSU(PSUId, PSUName, wattage, quality, brandId) VALUES (4, 'NZXT C750', 750, 4, 17);
+INSERT INTO PSU(PSUId, PSUName, wattage, quality, brandId) VALUES (5, 'Fractal Design Ion+ 2 Platinum 860W', 860, 4, 25);
+INSERT INTO PSU(PSUId, PSUName, wattage, quality, brandId) VALUES (6, 'Cooler Master MWE Gold V2 550', 550, 3, 18);
+INSERT INTO PSU(PSUId, PSUName, wattage, quality, brandId) VALUES (7, 'Thermaltake Toughpower GF1 1000W', 1000, 5, 20);
+INSERT INTO PSU(PSUId, PSUName, wattage, quality, brandId) VALUES (8, 'Corsair HX1200', 1200, 5, 8);
+INSERT INTO PSU(PSUId, PSUName, wattage, quality, brandId) VALUES (9, 'SilverStone SX500-LG', 500, 2, 22);
+INSERT INTO PSU(PSUId, PSUName, wattage, quality, brandId) VALUES (10, 'Deepcool DQ750-M-V2L', 750, 3, 24);
+
+COMMIT;

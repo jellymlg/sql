@@ -3,7 +3,10 @@ DROP USER ADMIN CASCADE;
 EXECUTE DBMS_OUTPUT.PUT_LINE('Creating user ADMIN...');
 @create_user.sql
 
-EXECUTE DBMS_OUTPUT.PUT_LINE('Creating Tables...');
+EXECUTE DBMS_OUTPUT.PUT_LINE('Creating sequences...');
+@create_sequences.sql
+
+EXECUTE DBMS_OUTPUT.PUT_LINE('Creating tables...');
 @create_tables.sql
 
 EXECUTE DBMS_OUTPUT.PUT_LINE('Adding constraints...');

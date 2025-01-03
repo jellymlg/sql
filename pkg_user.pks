@@ -1,5 +1,3 @@
-CREATE SEQUENCE user_id_seq START WITH 2365;
-
 CREATE OR REPLACE PACKAGE pkg_user AS
   PROCEDURE create_user(p_username IN VARCHAR2
                        ,p_password IN VARCHAR2);

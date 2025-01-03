@@ -5,11 +5,13 @@ BEGIN
   IF inserting
   THEN
     INSERT INTO userlog
-      (action
+      (logId
+      ,action
       ,newusername
       ,newpassword)
     VALUES
-      ('INSERT'
+      (userlog_id_seq.NEXTVAL
+      ,'INSERT'
       ,:new.username
       ,:new.password);
   END IF;
@@ -17,13 +19,15 @@ BEGIN
   IF updating
   THEN
     INSERT INTO userlog
-      (action
+      (logId
+      ,action
       ,newusername
       ,newpassword
       ,oldusername
       ,oldpassword)
     VALUES
-      ('UPDATE'
+      (userlog_id_seq.NEXTVAL
+      ,'UPDATE'
       ,:new.username
       ,:new.password
       ,:old.username
@@ -33,11 +37,13 @@ BEGIN
   IF deleting
   THEN
     INSERT INTO userlog
-      (action
+      (logId
+      ,action
       ,oldusername
       ,oldpassword)
     VALUES
-      ('DELETE'
+      (userlog_id_seq.NEXTVAL
+      ,'DELETE'
       ,:old.username
       ,:old.password);
   END IF;

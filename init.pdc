@@ -13,10 +13,10 @@ EXECUTE DBMS_OUTPUT.PUT_LINE('Adding constraints...');
 @add_constraints.sql
 
 EXECUTE DBMS_OUTPUT.PUT_LINE('Creating package user...');
-@pkg_user.pks
+@pkg_user.pck
 
 EXECUTE DBMS_OUTPUT.PUT_LINE('Creating package build...');
-@pkg_build.pks
+@pkg_build.pck
 
 EXECUTE DBMS_OUTPUT.PUT_LINE('Adding trigger for product supply integrity...');
 @product_supply.trg
